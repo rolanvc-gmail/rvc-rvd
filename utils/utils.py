@@ -18,10 +18,17 @@ def cosine_beta_schedule(timesteps, s=0.008):
     return np.clip(betas, a_min=0, a_max=0.999)
 
 
+def cycle(dl):
+    while True:
+        for data in dl:
+            yield data
+
+
 def default(val, d):
     if exists(val):
         return val
     return d() if isfunction(d) else d
+
 
 def exists(x):
     return x is not None

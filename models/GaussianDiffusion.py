@@ -15,8 +15,8 @@ class GaussianDiffusion(nn.Module):
             self,
             denoise_fn,
             history_fn,
-            transform_fn = None,
-            channels = 3,
+            transform_fn=None,
+            channels=3,
             timesteps=1000,
             loss_type="l1",
             betas=None,
@@ -51,7 +51,7 @@ class GaussianDiffusion(nn.Module):
         # create a callable partial object, so arrays can be easily converted to tensors
         to_torch = partial(torch.tensor, dtype=torch.float32)
 
-        # save betas, alphas, etc to register_buffers.
+        # save betas, alphas, etc. to register_buffers.
         self.register_buffer("betas", to_torch(betas))
         self.register_buffer("alphas_cumprod", to_torch(alphas_cumprod))
         self.register_buffer("alphas_cumprod_prev", to_torch(alphas_cumprod_prev))
@@ -60,10 +60,10 @@ class GaussianDiffusion(nn.Module):
         self.register_buffer("sqrt_one_minus_alphas_cumprod", to_torch(np.sqrt(1.0-alphas_cumprod)))
         self.register_buffer("log_one_minus_alphas_cumprod", to_torch(np.log(1.0-alphas_cumprod)))
         self.register_buffer("sqrt_recip_alphas_cumprod", to_torch(np.sqrt(1.0/alphas_cumprod)))
-        self.register_buffer("sqrt_recipm1_alphas_cumprod", to_torch(np.sqrt(1.0/alphas_cumprod - 1)))
+        self.register_buffer("sqrt_recip_m1_alphas_cumprod", to_torch(np.sqrt(1.0/alphas_cumprod - 1)))
 
         # calculations for posterior q(x_{t-1} |x_t, x_0)
-        posterior_variance = betas * (1-alphas_cumprod_prev) / (1.0 - alphas_cumprod) # in ddpm paper, eqn 7
+        posterior_variance = betas * (1-alphas_cumprod_prev) / (1.0 - alphas_cumprod)  # in ddpm paper, eqn 7
 
         # above: equal to 1. / (1. / (1. - alpha_cumprod_tm1) + alpha_t / beta_t)
         self.register_buffer("posterior_variance", to_torch(posterior_variance))
@@ -73,11 +73,11 @@ class GaussianDiffusion(nn.Module):
             to_torch(np.log(np.maximum(posterior_variance, 1e-20))),
         )
         self.register_buffer(
-            "posterior_mean_coef1",
+            "posterior_mean_coeff1",
             to_torch(betas * np.sqrt(alphas_cumprod_prev) / (1.0 - alphas_cumprod)),  # eqn 7, coefficient of x_0
         )
         self.register_buffer(
-            "posterior_mean_coef2",
+            "posterior_mean_coeff2",
             to_torch((1.0 - alphas_cumprod_prev) * np.sqrt(alphas) / (1.0 - alphas_cumprod)),  # eqn 7 coefficient of x_1
         )
 
@@ -116,7 +116,6 @@ class GaussianDiffusion(nn.Module):
         )
         return model_mean, posterior_variance, posterior_log_variance
 
-
     @torch.no_grad()
     def p_sample(self, x, t, context, clip_denoised=True, repeat_noise=False):
         b, *_, device = *x.shape, x.device
@@ -150,7 +149,7 @@ class GaussianDiffusion(nn.Module):
             # if count % 100 == 0:
             #     res.append(img)
         # res.append(img)
-        return img#, res
+        return img  # , res
 
     @torch.no_grad()
     def sample(self, init_frames, num_of_frames=3):
@@ -178,7 +177,7 @@ class GaussianDiffusion(nn.Module):
             if exists(self.transform_fn):
                 trans_shift_scale = self.transform_fn(generated_frame.clamp(-1, 1))
             video.append(generated_frame)
-        return torch.stack(video, 0)  #, torch.stack(mu, 0), torch.stack(res, 0)
+        return torch.stack(video, 0)  # , torch.stack(mu, 0), torch.stack(res, 0)
 
     def q_sample(self, x_start, t, noise=None):
         noise = default(noise, lambda: torch.randn_like(x_start))
@@ -249,6 +248,3 @@ class GaussianDiffusion(nn.Module):
         if exists(self.transform_fn):
             self.otherlogs["predict"] = torch.stack(self.otherlogs["predict"], 0)
         return loss / (video.shape[0] - 2)
-
-
-

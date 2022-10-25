@@ -5,6 +5,7 @@ from components import (SinusoidalPosEmb,
                         PreNorm,
                         LinearAttention,
                         Upsample,
+                        Downsample,
                         )
 
 
@@ -39,15 +40,15 @@ class Unet(nn.Module):
         num_resolutions = len(in_out)
 
         for ind, (dim_in, dim_out) in enumerate(in_out):
-            is_last = ind >= (num_resolutions -1)
+            is_last = ind >= (num_resolutions - 1)
 
             self.downs.append(
                 nn.ModuleList(
                     [
-                        get_backbone(backbone, (dim_out * 2, dim_in, time_dim)),
-                        get_backbone(backbone, (dim_in, dim_in, time_dim)),
-                        Residual(PreNorm(dim_in, LinearAttention(dim_in))),
-                        Upsample(dim_in) if not is_last else nn.Identity(),
+                        get_backbone(backbone, (dim_in, dim_out, time_dim)),
+                        get_backbone(backbone, (dim_in+int(dim_out*self.context_dim_factor), dim_out, time_dim)),
+                        Residual(PreNorm(dim_out, LinearAttention(dim_out))),
+                        Downsample(dim_in) if not is_last else nn.Identity(),
                     ]
                 )
             )

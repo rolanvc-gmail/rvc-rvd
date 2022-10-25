@@ -4,6 +4,7 @@ from utils import exists
 from components import LayerNorm
 from einops import rearrange
 
+
 class ConvNetBlock(nn.Module):
     def __int__(self, dim, dim_out, time_emb_dim=None, mult=2, norm=True):
         super().__init__()
@@ -30,5 +31,6 @@ class ConvNetBlock(nn.Module):
             condition = self.mlp(time_emb)
             h = h+rearrange(condition, " b c -> b c 1 1")
 
-            h = self.net(h)
-            return h + self.res_conv(x)
+        h = self.net(h)
+        return h + self.res_conv(x)
+

@@ -6,6 +6,9 @@ from ResnetBlock import ResnetBlock
 from LayerNorm import LayerNorm
 from LinearAttention import LinearAttention
 from Upsample import Upsample
+from Downsample import Downsample
+from Exp import Exp
+from ConvGRUCell import ConvGRUCell
 
 
 def get_backbone(name, params):

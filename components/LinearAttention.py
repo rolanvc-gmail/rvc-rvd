@@ -2,6 +2,7 @@ import torch
 from torch import nn
 from einops import rearrange
 
+
 class LinearAttention(nn.Module):
 
     def __int__(self, dim, heads=4, dim_head=16):
